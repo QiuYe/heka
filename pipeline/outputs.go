@@ -383,6 +383,15 @@ func (t *TcpOutput) Run(or OutputRunner, h PluginHelper) (err error) {
 
 		if n, e = t.connection.Write(outBytes); e != nil {
 			or.LogError(fmt.Errorf("writing to %s: %s", t.address, e))
+			pack.Recycle()
+			go func() {
+				h.PipelineConfig().router.RemoveOutputMatcher() <- or.MatchRunner()
+			}()
+			// recycle any messages until the matcher is torn down
+			for pack = range or.InChan() {
+				pack.Recycle()
+			}
+			break // See issue #355
 		} else if n != len(outBytes) {
 			or.LogError(fmt.Errorf("truncated output to: %s", t.address))
 		}

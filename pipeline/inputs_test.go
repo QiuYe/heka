@@ -249,6 +249,7 @@ func InputsSpec(c gs.Context) {
 		ith.MockHelper.EXPECT().DecoderSet().Return(ith.MockDecoderSet)
 		enccall := ith.MockDecoderSet.EXPECT().ByEncodings()
 		enccall.Return(ith.Decoders, nil)
+		mockConnection.EXPECT().SetReadDeadline(gomock.Any()).Return(nil)
 
 		c.Specify("reads a message from its connection", func() {
 			hbytes, _ := proto.Marshal(header)
